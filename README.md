@@ -3,7 +3,7 @@ depts-to-skos-ontology
 
 Script for transforming a CSV representation of the UNC department ontology to SKOS XML
 
-	ruby csv-to-skos.rb ontology.csv > ontology.xml
+	ruby csv-to-skos.rb depts.csv > depts.xml
 
 Setup
 =====
