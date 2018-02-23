@@ -7,7 +7,7 @@ builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
   xml['rdf'].RDF('xmlns:skos' => 'http://www.w3.org/2004/02/skos/core#', 'xmlns:rdf' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#') {
     CSV.foreach(ARGV[0], { :col_sep => "\t", :headers=>:first_row}) do |row|
       if lastConcept != row[0] && row[0] != nil
-        lastConcept = row[0]
+        lastConcept = row[0].strip
         xml['skos'].Concept('rdf:about' => lastConcept) do |inner|
           currentConcept = inner.parent
           
@@ -24,21 +24,26 @@ builder = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
             xml['skos'].hiddenLabel labelValue
           end
         end
-
-      elsif row[1] == "NT"
-        xb = Nokogiri::XML::Builder.new({}, currentConcept)
-        xb.narrower('rdf:resource' => row[2])
-      elsif row[1] == "BT"
-        xb = Nokogiri::XML::Builder.new({}, currentConcept)
-        xb.broader('rdf:resource' => row[2])
-      elsif row[1] != nil && row[1].casecmp("USE") == 0
-        xb = Nokogiri::XML::Builder.new({}, currentConcept)
-        xb.prefLabel row[2]
-      elsif row[1] != nil && row[1].casecmp("UF") == 0
-        xb = Nokogiri::XML::Builder.new({}, currentConcept)
-        xb.altLabel row[2]
+      else
+        value = row[2]
+        if row[1] != nil && value != nil
+          value = value.strip
+          
+          if row[1] == "NT"
+            xb = Nokogiri::XML::Builder.new({}, currentConcept)
+            xb.narrower('rdf:resource' => value)
+          elsif row[1] == "BT"
+            xb = Nokogiri::XML::Builder.new({}, currentConcept)
+            xb.broader('rdf:resource' => value)
+          elsif row[1] != nil && row[1].casecmp("USE") == 0
+            xb = Nokogiri::XML::Builder.new({}, currentConcept)
+            xb.prefLabel value
+          elsif row[1] != nil && row[1].casecmp("UF") == 0
+            xb = Nokogiri::XML::Builder.new({}, currentConcept)
+            xb.altLabel value
+          end
+        end
       end
-      
     end
   }
 end
